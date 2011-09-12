@@ -8,8 +8,8 @@ Gem::Specification.new do |s|
   s.authors     = ["maeve"]
   s.email       = ["maeve.revels@g5platform.com"]
   s.homepage    = ""
-  s.summary     = %q{TODO: Write a gem summary}
-  s.description = %q{TODO: Write a gem description}
+  s.summary     = %q{A generator for new adapter gems}
+  s.description = %q{Generates a skeletal adapter for input from a third-party source (e.g. a SOAP service).}
 
   s.rubyforge_project = "adapter_generator"
 
@@ -18,7 +18,10 @@ Gem::Specification.new do |s|
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_paths = ["lib"]
 
-  # specify any dependencies here; for example:
-  # s.add_development_dependency "rspec"
-  # s.add_runtime_dependency "rest-client"
+  s.add_development_dependency('yard','~>0.7')
+  s.add_development_dependency('rdiscount', '~>1.6')
+
+  s.add_development_dependency('rspec','~>2.6')
+  s.add_development_dependency('webmock','~>1.7')
+  s.add_development_dependency('fakefs','~>0.4')
 end
