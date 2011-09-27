@@ -1,5 +1,5 @@
-require "adapter_generator/version"
+require 'adapter_generator/version'
 
 module AdapterGenerator
-  # Your code goes here...
+  require 'adapter_generator/new_gem'
 end
