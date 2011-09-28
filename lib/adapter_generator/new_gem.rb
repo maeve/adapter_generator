@@ -39,6 +39,11 @@ module AdapterGenerator
       template('new_gem.gemspec.tt', File.join(gem_path, "#{opts[:name]}.gemspec"), opts)
     end
 
+    def create_gemfile
+      opts = {:name => name.underscore}
+      template('Gemfile.tt', File.join(gem_path, 'Gemfile'), opts)
+    end
+
     private
     def gem_path
       File.join(Dir.pwd, name.underscore)
