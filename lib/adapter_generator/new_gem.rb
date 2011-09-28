@@ -57,6 +57,11 @@ module AdapterGenerator
       template('Rakefile.tt', File.join(gem_path, 'Rakefile'))
     end
 
+    def setup_git
+      template('gitignore.tt', File.join(gem_path, '.gitignore'))
+      initialize_git
+    end
+
     private
     def gem_path
       File.join(Dir.pwd, name.underscore)
@@ -72,6 +77,11 @@ module AdapterGenerator
 
     def make_bin_executable
       chmod(File.join(gem_path, 'bin', name.underscore), 0755)
+    end
+
+    def initialize_git
+      shell.say_status('initialize', 'git')
+      Dir.chdir(gem_path) { `git init`; `git add .` }
     end
   end
 end

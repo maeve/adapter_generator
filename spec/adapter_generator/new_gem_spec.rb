@@ -15,6 +15,7 @@ describe AdapterGenerator::NewGem do
     AdapterGenerator::NewGem.any_instance.stub(:git_user_name).and_return(author_name)
     AdapterGenerator::NewGem.any_instance.stub(:git_user_email).and_return(author_email)
     AdapterGenerator::NewGem.any_instance.stub(:make_bin_executable).and_return(nil)
+    AdapterGenerator::NewGem.any_instance.stub(:initialize_git).and_return(nil)
   end
 
   let(:run_generator) { capture(:stdout) { AdapterGenerator::NewGem.start(args) } }
@@ -217,6 +218,30 @@ describe AdapterGenerator::NewGem do
     end
   end
 
+  shared_examples_for 'a git configurer' do
+    let(:gitignore) { File.join(gem_path, '.gitignore') }
+
+    it 'should create a .gitignore file' do
+      expect { subject }.to change { File.file?(gitignore) }.from(false).to(true)
+    end
+
+    describe 'the .gitignore file' do
+      before { run_generator }
+
+      subject { File.open(gitignore, 'r') { |f| f.read } }
+
+      it { should match /\.bundle/ }
+      it { should match /pkg/ }
+      it { should match /\*\.gem/ }
+      it { should match /Gemfile\.lock/ }
+    end
+
+    it 'should initialize a new git repo' do
+      AdapterGenerator::NewGem.any_instance.should_receive(:initialize_git).at_least(:once)
+      subject
+    end
+  end
+
   context "when gem name argument is in snake case" do
     let(:gem_name_arg) { 'my_gem' }
     let(:gem_name) { gem_name_arg }
@@ -227,6 +252,7 @@ describe AdapterGenerator::NewGem do
     it_should_behave_like 'a Gemfile generator'
     it_should_behave_like 'a bin generator'
     it_should_behave_like 'a Rakefile generator'
+    it_should_behave_like 'a git configurer'
   end
 
   context "when gem name argument is in camel case" do
@@ -239,6 +265,7 @@ describe AdapterGenerator::NewGem do
     it_should_behave_like 'a Gemfile generator'
     it_should_behave_like 'a bin generator'
     it_should_behave_like 'a Rakefile generator'
+    it_should_behave_like 'a git configurer'
   end
 
   context "when gem name argument is in a hybrid format" do
@@ -251,16 +278,7 @@ describe AdapterGenerator::NewGem do
     it_should_behave_like 'a Gemfile generator'
     it_should_behave_like 'a bin generator'
     it_should_behave_like 'a Rakefile generator'
-  end
-
-
-
-  describe "#setup_git" do
-    # TODO
-  end
-
-  describe "#setup_rake" do
-    # TODO
+    it_should_behave_like 'a git configurer'
   end
 
   describe "#setup_dependencies" do
