@@ -168,7 +168,7 @@ describe AdapterGenerator::NewGem do
   end
 
   shared_examples_for 'a bin generator' do
-    let(:bin_path) { File.join(gem_path, "bin") }
+    let(:bin_path) { File.join(gem_path, 'bin') }
     let(:bin_file) { File.join(bin_path, gem_name) }
 
     context "with --bin" do
@@ -201,6 +201,22 @@ describe AdapterGenerator::NewGem do
     end
   end
 
+  shared_examples_for 'a Rakefile generator' do
+    let(:rakefile) { File.join(gem_path, 'Rakefile') }
+
+    it 'should create a Rakefile' do
+      expect { subject }.to change { File.file?(rakefile) }.from(false).to(true)
+    end
+
+    describe 'the Rakefile' do
+      before { run_generator }
+
+      subject { File.open(rakefile, 'r') { |f| f.read } }
+
+      it { should match /require\s+['"]bundler\/gem_tasks['"]/ }
+    end
+  end
+
   context "when gem name argument is in snake case" do
     let(:gem_name_arg) { 'my_gem' }
     let(:gem_name) { gem_name_arg }
@@ -210,6 +226,7 @@ describe AdapterGenerator::NewGem do
     it_should_behave_like 'a gemspec generator'
     it_should_behave_like 'a Gemfile generator'
     it_should_behave_like 'a bin generator'
+    it_should_behave_like 'a Rakefile generator'
   end
 
   context "when gem name argument is in camel case" do
@@ -221,6 +238,7 @@ describe AdapterGenerator::NewGem do
     it_should_behave_like 'a gemspec generator'
     it_should_behave_like 'a Gemfile generator'
     it_should_behave_like 'a bin generator'
+    it_should_behave_like 'a Rakefile generator'
   end
 
   context "when gem name argument is in a hybrid format" do
@@ -232,6 +250,7 @@ describe AdapterGenerator::NewGem do
     it_should_behave_like 'a gemspec generator'
     it_should_behave_like 'a Gemfile generator'
     it_should_behave_like 'a bin generator'
+    it_should_behave_like 'a Rakefile generator'
   end
 
 

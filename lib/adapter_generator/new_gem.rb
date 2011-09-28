@@ -53,6 +53,10 @@ module AdapterGenerator
       end
     end
 
+    def create_rakefile
+      template('Rakefile.tt', File.join(gem_path, 'Rakefile'))
+    end
+
     private
     def gem_path
       File.join(Dir.pwd, name.underscore)
