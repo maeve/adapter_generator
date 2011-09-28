@@ -1,6 +1,10 @@
 require 'spec_helper'
 
 describe AdapterGenerator::NewGem do
+  # These aren't really unit tests, since thor manages so much of the object
+  # lifecycle. These are more like functional tests: multiple pieces of code
+  # may be executed for each example, but external resources are mocked..
+
   let(:project_root) { File.expand_path(File.join(File.dirname(__FILE__), '..', '..')) }
   before { FakeFS::FileSystem.clone(project_root) }
 
@@ -10,6 +14,7 @@ describe AdapterGenerator::NewGem do
   before do
     AdapterGenerator::NewGem.any_instance.stub(:git_user_name).and_return(author_name)
     AdapterGenerator::NewGem.any_instance.stub(:git_user_email).and_return(author_email)
+    AdapterGenerator::NewGem.any_instance.stub(:make_bin_executable).and_return(nil)
   end
 
   let(:run_generator) { capture(:stdout) { AdapterGenerator::NewGem.start(args) } }
@@ -162,6 +167,40 @@ describe AdapterGenerator::NewGem do
     end
   end
 
+  shared_examples_for 'a bin generator' do
+    let(:bin_path) { File.join(gem_path, "bin") }
+    let(:bin_file) { File.join(bin_path, gem_name) }
+
+    context "with --bin" do
+      let(:args) { [gem_name, '--bin'] }
+
+      it "should create the bin directory" do
+        expect { subject }.to change { Dir.exists?(bin_path) }.from(false).to(true)
+      end
+
+      it "should create a bin file in the appropriate location" do
+        expect { subject }.to change { File.file?(bin_file) }.from(false).to(true)
+      end
+
+      # TODO: verify that the bin file is executable when FakeFS supports file permissions: https://github.com/defunkt/fakefs/issues/73
+
+      describe "the binfile" do
+        before { run_generator }
+
+        subject { File.open(bin_file, 'r') { |f| f.read } }
+
+        it { should match /^#!\/usr\/bin\/env\s+ruby/ }
+        it { should match /^\s*require\s+["']#{gem_name}["']/ }
+      end
+    end
+
+    context "without --bin" do
+      it "should not create a binfile" do
+        expect { subject }.to_not change { File.file?(bin_file) }
+      end
+    end
+  end
+
   context "when gem name argument is in snake case" do
     let(:gem_name_arg) { 'my_gem' }
     let(:gem_name) { gem_name_arg }
@@ -170,6 +209,7 @@ describe AdapterGenerator::NewGem do
     it_should_behave_like 'a gem lib generator'
     it_should_behave_like 'a gemspec generator'
     it_should_behave_like 'a Gemfile generator'
+    it_should_behave_like 'a bin generator'
   end
 
   context "when gem name argument is in camel case" do
@@ -180,6 +220,7 @@ describe AdapterGenerator::NewGem do
     it_should_behave_like 'a gem lib generator'
     it_should_behave_like 'a gemspec generator'
     it_should_behave_like 'a Gemfile generator'
+    it_should_behave_like 'a bin generator'
   end
 
   context "when gem name argument is in a hybrid format" do
@@ -190,6 +231,7 @@ describe AdapterGenerator::NewGem do
     it_should_behave_like 'a gem lib generator'
     it_should_behave_like 'a gemspec generator'
     it_should_behave_like 'a Gemfile generator'
+    it_should_behave_like 'a bin generator'
   end
 
 
@@ -216,9 +258,5 @@ describe AdapterGenerator::NewGem do
 
   describe "#setup_docs" do
     # TODO
-  end
-
-  describe "#create_bin" do
-    # TODO: this will be optional
   end
 end

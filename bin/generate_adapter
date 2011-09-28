@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+require 'thor'
+require 'adapter_generator'
+
+AdapterGenerator::NewGem.start

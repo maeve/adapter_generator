@@ -44,6 +44,15 @@ module AdapterGenerator
       template('Gemfile.tt', File.join(gem_path, 'Gemfile'), opts)
     end
 
+    def create_bin
+      if options[:bin]
+        opts = {:name => name.underscore}
+        target = File.join(gem_path, 'bin', opts[:name])
+        template('bin/new_gem.tt', target, opts)
+        make_bin_executable
+      end
+    end
+
     private
     def gem_path
       File.join(Dir.pwd, name.underscore)
@@ -55,6 +64,10 @@ module AdapterGenerator
 
     def git_user_email
       `git config user.email`.chomp
+    end
+
+    def make_bin_executable
+      chmod(File.join(gem_path, 'bin', name.underscore), 0755)
     end
   end
 end
