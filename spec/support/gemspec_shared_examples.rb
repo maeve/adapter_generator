@@ -99,5 +99,7 @@ shared_examples_for 'a gemspec generator' do
       it { should_not match /\.add_[a-z_]*dependency\(\s*['"]savon['"]/ }
       it { should_not match /\.add_[a-z_]*dependency\(\s*['"]savon_spec['"]/ }
     end
+
+    it { should match /\.add_dependency\(\s*['"]modelish['"]/ }
   end
 end
