@@ -10,8 +10,9 @@ module AdapterGenerator
 
     class_option :author_name, :type => :string, :desc => "the gem author's name (defaults to git config user.name)"
     class_option :author_email, :type => :string, :desc => "the gem author's email (defaults to git config user.email)"
-    class_option :homepage, :type => :string, :desc => "the homepage URL for the project"
-    class_option :bin, :type => :boolean, :default => false, :aliases => "-b", :banner => "Generate a binary for your library"
+    class_option :homepage, :type => :string, :desc => 'the homepage URL for the project'
+    class_option :bin, :type => :boolean, :default => false, :aliases => '-b', :desc => 'generate a binary (executable)'
+    class_option :ruby, :type => :string, :default => '1.8.7', :desc => 'the version of ruby for rvm to use'
 
     def self.source_root
       File.expand_path(File.join(File.dirname(__FILE__), 'templates'))
@@ -55,6 +56,11 @@ module AdapterGenerator
 
     def create_rakefile
       template('Rakefile.tt', File.join(gem_path, 'Rakefile'))
+    end
+
+    def setup_rvm
+      opts = {:name => name.underscore, :ruby => options[:ruby]}
+      template('rvmrc.tt', File.join(gem_path, '.rvmrc'), opts)
     end
 
     def setup_git
