@@ -1,0 +1,36 @@
+<% if config[:soap] %>require 'savon'<% end %>
+
+module <%= config[:constant] %>
+  # TODO: document <%= config[:constant] %>::Client
+  class Client
+
+    # Initializes the client.
+    #
+    # @param [Hash] options
+    # TODO: document individual options
+    def initialize(options={})
+      options.each { |k,v| self.send("#{k}=", v) if self.respond_to?("#{k}=") }
+    end
+
+    def foo
+    end
+<% if config[:soap] %>
+    def send_soap_request(soap_action,soap_parameters={})
+      begin
+        response = soap_client.request :wsdl, soap_action do
+          # Uncomment the following when the service requires fully-qualified input XML
+          # soap.element_form_default = :qualified
+          soap.body = soap_parameters
+        end
+      rescue Savon::SOAP::Fault => f
+        # TODO: error handling
+        raise f
+      end
+    end
+
+    def soap_client
+      Savon::Client.new
+    end
+<% end %>
+  end
+end

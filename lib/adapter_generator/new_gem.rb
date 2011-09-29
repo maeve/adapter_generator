@@ -13,17 +13,21 @@ module AdapterGenerator
     class_option :homepage, :type => :string, :desc => 'the homepage URL for the project'
     class_option :bin, :type => :boolean, :default => false, :aliases => '-b', :desc => 'generate a binary (executable)'
     class_option :ruby, :type => :string, :default => '1.8.7', :desc => 'the version of ruby for rvm to use'
+    class_option :soap, :type => :boolean, :default => false, :aliases => '-s', :desc => 'generate a SOAP client'
 
     def self.source_root
       File.expand_path(File.join(File.dirname(__FILE__), 'templates'))
     end
 
     def create_lib
-      opts = {:name => name.underscore, :constant => name.camelize}
+      opts = {:name => name.underscore,
+              :constant => name.camelize,
+              :soap => options[:soap] }
       target = File.join(gem_path, 'lib')
 
       template(File.join('lib', 'new_gem.rb.tt'), File.join(target, "#{opts[:name]}.rb"), opts)
       template(File.join('lib', 'new_gem', 'version.rb.tt'), File.join(target, opts[:name], 'version.rb'), opts)
+      template(File.join('lib', 'new_gem', 'client.rb.tt'), File.join(target, opts[:name], 'client.rb'), opts)
     end
 
     def create_gemspec
@@ -32,7 +36,8 @@ module AdapterGenerator
               :author_name => options[:author_name] || git_user_name,
               :author_email => options[:author_email] || git_user_email,
               :homepage => options[:homepage],
-              :bin => options[:bin] }
+              :bin => options[:bin],
+              :soap => options[:soap] }
 
       opts[:author_name] = "TODO: enter your name" if opts[:author_name].blank?
       opts[:author_email] = "TODO: enter your email address" if opts[:author_email].blank?

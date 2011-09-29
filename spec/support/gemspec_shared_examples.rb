@@ -87,5 +87,17 @@ shared_examples_for 'a gemspec generator' do
 
     it { should match /\.add_development_dependency\(\s*["']yard['"]/ }
     it { should match /\.add_development_dependency\(\s*["']rdiscount['"]/ }
+
+    context "with --soap" do
+      let(:args) { [gem_name, '--soap'] }
+
+      it { should match /\.add_dependency\(\s*['"]savon['"]/ }
+      it { should match /\.add_development_dependency\(\s*['"]savon_spec['"]/ }
+    end
+
+    context "without --soap" do
+      it { should_not match /\.add_[a-z_]*dependency\(\s*['"]savon['"]/ }
+      it { should_not match /\.add_[a-z_]*dependency\(\s*['"]savon_spec['"]/ }
+    end
   end
 end

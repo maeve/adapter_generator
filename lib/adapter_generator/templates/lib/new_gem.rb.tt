@@ -2,4 +2,6 @@ require '<%=config[:name]%>/version'
 
 module <%=config[:constant]%>
   # TODO: your code goes here
+
+  require '<%=config[:name]%>/client'
 end
