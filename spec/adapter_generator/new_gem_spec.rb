@@ -146,6 +146,9 @@ describe AdapterGenerator::NewGem do
       it { should match /\.add_development_dependency\(\s*["']rspec['"]/ }
       it { should match /\.add_development_dependency\(\s*["']webmock['"]/ }
       it { should match /\.add_development_dependency\(\s*["']fakefs['"]/ }
+
+      it { should match /\.add_development_dependency\(\s*["']yard['"]/ }
+      it { should match /\.add_development_dependency\(\s*["']rdiscount['"]/ }
     end
   end
 
@@ -223,6 +226,10 @@ describe AdapterGenerator::NewGem do
       it { should match /require\s+['"]rspec\/core\/rake_task["']/ }
       it { should match /RSpec::Core::RakeTask.new\(\s*:spec\s*\)/ }
       it { should match /task\s+:default\s*=>\s*:spec/ }
+
+      it { should match /namespace\s+:doc/ }
+      it { should match /require\s+['"]yard['"]/ }
+      it { should match /YARD::Rake::YardocTask\.new/ }
     end
   end
 
@@ -325,6 +332,23 @@ describe AdapterGenerator::NewGem do
     end
   end
 
+  shared_examples_for 'a doc generator' do
+    let(:readme) { File.join(gem_path, 'README.md') }
+
+    it "should create the README.md" do
+      expect { subject }.to change { File.file?(readme) }.from(false).to(true)
+    end
+
+    describe "the README.md" do
+      before { run_generator }
+
+      subject { File.open(readme) { |f| f.read } }
+
+      it { should match /#\s+#{human_name}\s+#/ }
+      it { should match /TODO/ }
+    end
+  end
+
   shared_examples_for 'a git initializer' do
     let(:gitignore) { File.join(gem_path, '.gitignore') }
 
@@ -341,6 +365,7 @@ describe AdapterGenerator::NewGem do
       it { should match /pkg/ }
       it { should match /\*\.gem/ }
       it { should match /Gemfile\.lock/ }
+      it { should match /doc/ }
     end
 
     it 'should initialize a new git repo' do
@@ -353,6 +378,7 @@ describe AdapterGenerator::NewGem do
     let(:gem_name_arg) { 'my_gem' }
     let(:gem_name) { gem_name_arg }
     let(:module_name) { 'MyGem' }
+    let(:human_name) { 'My Gem' }
 
     it_should_behave_like 'a gem lib generator'
     it_should_behave_like 'a gemspec generator'
@@ -361,6 +387,7 @@ describe AdapterGenerator::NewGem do
     it_should_behave_like 'a Rakefile generator'
     it_should_behave_like 'a rvm configurer'
     it_should_behave_like 'a rspec configurer'
+    it_should_behave_like 'a doc generator'
     it_should_behave_like 'a git initializer'
   end
 
@@ -368,6 +395,7 @@ describe AdapterGenerator::NewGem do
     let(:gem_name_arg) { 'MyGem' }
     let(:gem_name) { 'my_gem' }
     let(:module_name) { gem_name_arg }
+    let(:human_name) { 'My Gem' }
 
     it_should_behave_like 'a gem lib generator'
     it_should_behave_like 'a gemspec generator'
@@ -376,6 +404,7 @@ describe AdapterGenerator::NewGem do
     it_should_behave_like 'a Rakefile generator'
     it_should_behave_like 'a rvm configurer'
     it_should_behave_like 'a rspec configurer'
+    it_should_behave_like 'a doc generator'
     it_should_behave_like 'a git initializer'
   end
 
@@ -383,6 +412,7 @@ describe AdapterGenerator::NewGem do
     let(:gem_name_arg) { 'myGem_is_Awesome' }
     let(:gem_name) { 'my_gem_is_awesome' }
     let(:module_name) { 'MyGemIsAwesome' }
+    let(:human_name) { 'My Gem Is Awesome' }
 
     it_should_behave_like 'a gem lib generator'
     it_should_behave_like 'a gemspec generator'
@@ -391,14 +421,7 @@ describe AdapterGenerator::NewGem do
     it_should_behave_like 'a Rakefile generator'
     it_should_behave_like 'a rvm configurer'
     it_should_behave_like 'a rspec configurer'
+    it_should_behave_like 'a doc generator'
     it_should_behave_like 'a git initializer'
-  end
-
-  describe "#setup_dependencies" do
-    # TODO
-  end
-
-  describe "#setup_docs" do
-    # TODO
   end
 end

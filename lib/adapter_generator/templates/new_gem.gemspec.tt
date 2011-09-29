@@ -21,6 +21,9 @@ Gem::Specification.new do |s|
   s.add_development_dependency('webmock', '~>1.7')
   s.add_development_dependency('fakefs', '~>0.4')
 
+  s.add_development_dependency('yard', '~>0.7')
+  s.add_development_dependency('rdiscount', '~>1.6')
+
   # specify dependencies here, for example:
   # s.add_development_dependency "cucumber"
   # s.add_runtime_dependency "rest-client"

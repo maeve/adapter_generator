@@ -73,6 +73,11 @@ module AdapterGenerator
       empty_directory(File.join(spec_path, opts[:name]))
     end
 
+    def create_docs
+      opts = {:title => name.underscore.humanize.titleize}
+      template('README.md.tt', File.join(gem_path, 'README.md'), opts)
+    end
+
     def setup_git
       template('gitignore.tt', File.join(gem_path, '.gitignore'))
       initialize_git
