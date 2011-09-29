@@ -72,18 +72,18 @@ describe AdapterGenerator::NewGem do
 
       subject { File.open(gemspec_file, 'r') { |f| f.read } }
 
-      it { should match /s\.name\s*=\s*"#{gem_name}"/ }
-      it { should match /s\.version\s+=\s*#{module_name}::VERSION/ }
+      it { should match /\.name\s*=\s*"#{gem_name}"/ }
+      it { should match /\.version\s+=\s*#{module_name}::VERSION/ }
 
       context "without --author_name" do
         context "when the author is in the git config" do
           let(:author_name) { 'Jane Q. Developer' }
 
-          it { should match /s\.authors\s*=\s*\[\s*"#{author_name}"\s*\]/ }
+          it { should match /\.authors\s*=\s*\[\s*"#{author_name}"\s*\]/ }
         end
 
         context "when there is no author in the git config" do
-          it { should match /s\.authors\s*=\s*\[\s*".*TODO.*"\s*\]/ }
+          it { should match /\.authors\s*=\s*\[\s*".*TODO.*"\s*\]/ }
         end
       end
 
@@ -91,18 +91,18 @@ describe AdapterGenerator::NewGem do
         let(:args) { [gem_name, "--author_name=#{author_name}"] }
         let(:author_name) { 'G5' }
 
-        it { should match /s\.authors\s*=\s*\[\s*"#{author_name}"\s*\]/ }
+        it { should match /\.authors\s*=\s*\[\s*"#{author_name}"\s*\]/ }
       end
 
       context "without --author_email" do
         context "when the author email is in the git config" do
           let(:author_email) { 'jane@test.com' }
 
-          it { should match /s\.email\s*=\s*\[\s*"#{author_email}"\s*\]/ }
+          it { should match /\.email\s*=\s*\[\s*"#{author_email}"\s*\]/ }
         end
 
         context "when there is no author email in the git config" do
-          it { should match /s\.email\s*=\s*\[\s*".*TODO.*"\s*\]/ }
+          it { should match /\.email\s*=\s*\[\s*".*TODO.*"\s*\]/ }
         end
       end
 
@@ -110,38 +110,42 @@ describe AdapterGenerator::NewGem do
         let(:args) { [gem_name, "--author_email=#{author_email}"] }
         let(:author_email) { 'engineering@g5platform.com' }
 
-        it { should match /s\.email\s*=\s*\[\s*"#{author_email}"\s*\]/ }
+        it { should match /\.email\s*=\s*\[\s*"#{author_email}"\s*\]/ }
       end
 
-      it { should match /s\.summary\s*=\s*%q\{.*TODO.*\}/ }
-      it { should match /s\.description\s*=\s*%q\{.*TODO.*\}/ }
+      it { should match /\.summary\s*=\s*%q\{.*TODO.*\}/ }
+      it { should match /\.description\s*=\s*%q\{.*TODO.*\}/ }
 
       context "without --homepage" do
-        it { should match /s\.homepage\s*=\s*""/ }
+        it { should match /\.homepage\s*=\s*""/ }
       end
 
       context "with --homepage" do
         let(:homepage) { 'http://testing.com/my_gem' }
         let(:args) { [gem_name, "--homepage=#{homepage}"] }
-        it { should match /s\.homepage\s*=\s*"#{homepage}"/ }
+        it { should match /\.homepage\s*=\s*"#{homepage}"/ }
       end
 
-      it { should match /s\.rubyforge_project\s*=\s*"#{gem_name}"/ }
+      it { should match /\.rubyforge_project\s*=\s*"#{gem_name}"/ }
 
-      it { should match /s\.files\s*=/ }
-      it { should match /s\.test_files\s*=/ }
+      it { should match /\.files\s*=/ }
+      it { should match /\.test_files\s*=/ }
 
       context "without --bin" do
-        it { should_not match /s\.executables\s*=/ }
+        it { should_not match /\.executables\s*=/ }
       end
 
       context "with --bin" do
         let(:args) { [gem_name, '--bin'] }
 
-        it { should match /s\.executables\s*=/ }
+        it { should match /\.executables\s*=/ }
       end
 
-      it { should match /s\.require_paths\s*=\s*\["lib"\]/ }
+      it { should match /\.require_paths\s*=\s*\[["']lib["']\]/ }
+
+      it { should match /\.add_development_dependency\(\s*["']rspec['"]/ }
+      it { should match /\.add_development_dependency\(\s*["']webmock['"]/ }
+      it { should match /\.add_development_dependency\(\s*["']fakefs['"]/ }
     end
   end
 
@@ -215,6 +219,10 @@ describe AdapterGenerator::NewGem do
       subject { File.open(rakefile, 'r') { |f| f.read } }
 
       it { should match /require\s+['"]bundler\/gem_tasks['"]/ }
+
+      it { should match /require\s+['"]rspec\/core\/rake_task["']/ }
+      it { should match /RSpec::Core::RakeTask.new\(\s*:spec\s*\)/ }
+      it { should match /task\s+:default\s*=>\s*:spec/ }
     end
   end
 
@@ -266,6 +274,57 @@ describe AdapterGenerator::NewGem do
     end
   end
 
+  shared_examples_for 'a rspec configurer' do
+    let(:spec_path) { File.join(gem_path, 'spec') }
+    let(:spec_helper) { File.join(spec_path, 'spec_helper.rb') }
+    let(:top_spec) { File.join(spec_path, "#{gem_name}_spec.rb") }
+
+    it "should create the .rspec config file" do
+      expect { subject }.to change { File.file?(File.join(gem_path, '.rspec')) }.from(false).to(true)
+    end
+
+    it "should create the spec directory" do
+      expect { subject }.to change { Dir.exists?(spec_path) }.from(false).to(true)
+    end
+
+    it "should create the spec_helper.rb" do
+      expect { subject }.to change { File.file?(spec_helper) }.from(false).to(true)
+    end
+
+    describe "the spec_helper.rb" do
+      before { run_generator }
+      subject { File.open(spec_helper, 'r') { |f| f.read } }
+
+      it { should match /require\s+['"]rspec['"]/ }
+      it { should match /require\s+['"]fakefs\/spec_helpers['"]/ }
+      it { should match /require\s+['"]webmock\/rspec['"]/ }
+      it { should match /require\s+['"]#{gem_name}['"]/ }
+      it { should match /RSpec\.configure\s+do\s+\|config\|/ }
+      it { should match /config\.include\s+FakeFS::SpecHelpers\s+/ }
+    end
+
+    it "should create the top-level spec" do
+      expect { subject }.to change { File.file?(File.join(top_spec)) }.from(false).to(true)
+    end
+
+    describe "the top-level spec" do
+      before { run_generator }
+      subject { File.open(top_spec, 'r') { |f| f.read } }
+
+      it { should match /require\s+['"]spec_helper['"]/ }
+      it { should match /describe #{module_name} do/ }
+      it { should match /it ['"]should/ }
+    end
+
+    it "should create the support directory" do
+      expect { subject }.to change { Dir.exists?(File.join(spec_path, 'support')) }.from(false).to(true)
+    end
+
+    it "should create the directory for the remaining specs" do
+      expect { subject }.to change { Dir.exists?(File.join(spec_path, gem_name)) }.from(false).to(true)
+    end
+  end
+
   shared_examples_for 'a git initializer' do
     let(:gitignore) { File.join(gem_path, '.gitignore') }
 
@@ -301,6 +360,7 @@ describe AdapterGenerator::NewGem do
     it_should_behave_like 'a bin generator'
     it_should_behave_like 'a Rakefile generator'
     it_should_behave_like 'a rvm configurer'
+    it_should_behave_like 'a rspec configurer'
     it_should_behave_like 'a git initializer'
   end
 
@@ -315,6 +375,7 @@ describe AdapterGenerator::NewGem do
     it_should_behave_like 'a bin generator'
     it_should_behave_like 'a Rakefile generator'
     it_should_behave_like 'a rvm configurer'
+    it_should_behave_like 'a rspec configurer'
     it_should_behave_like 'a git initializer'
   end
 
@@ -329,14 +390,11 @@ describe AdapterGenerator::NewGem do
     it_should_behave_like 'a bin generator'
     it_should_behave_like 'a Rakefile generator'
     it_should_behave_like 'a rvm configurer'
+    it_should_behave_like 'a rspec configurer'
     it_should_behave_like 'a git initializer'
   end
 
   describe "#setup_dependencies" do
-    # TODO
-  end
-
-  describe "#setup_tests" do
     # TODO
   end
 

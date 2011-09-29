@@ -49,7 +49,7 @@ module AdapterGenerator
       if options[:bin]
         opts = {:name => name.underscore}
         target = File.join(gem_path, 'bin', opts[:name])
-        template('bin/new_gem.tt', target, opts)
+        template(File.join('bin','new_gem.tt'), target, opts)
         make_bin_executable
       end
     end
@@ -61,6 +61,16 @@ module AdapterGenerator
     def setup_rvm
       opts = {:name => name.underscore, :ruby => options[:ruby]}
       template('rvmrc.tt', File.join(gem_path, '.rvmrc'), opts)
+    end
+
+    def setup_rspec
+      opts = {:name => name.underscore, :constant => name.camelize}
+      spec_path = File.join(gem_path, 'spec')
+      template('rspec.tt', File.join(gem_path, '.rspec'), opts)
+      template(File.join('spec','spec_helper.rb.tt'), File.join(spec_path, 'spec_helper.rb'), opts)
+      template(File.join('spec','new_gem_spec.rb.tt'), File.join(spec_path, "#{opts[:name]}_spec.rb"), opts)
+      empty_directory(File.join(spec_path, 'support'))
+      empty_directory(File.join(spec_path, opts[:name]))
     end
 
     def setup_git

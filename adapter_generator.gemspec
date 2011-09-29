@@ -27,7 +27,6 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency('rspec','~>2.6')
   s.add_development_dependency('webmock','~>1.7')
-  s.add_development_dependency('mocha', '~>0.10')
   s.add_development_dependency('fakefs','~>0.4')
   s.add_development_dependency('fakefs-require','~>0.2')
 end

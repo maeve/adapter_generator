@@ -8,7 +8,6 @@ require 'webmock/rspec'
 Dir["#{File.expand_path('../support', __FILE__)}/*.rb"].each { |f| require f }
 
 RSpec.configure do |config|
-  config.include WebMock::API
   config.include FakeFS::SpecHelpers
   config.include AdapterGenerator::Spec::Helpers
 
