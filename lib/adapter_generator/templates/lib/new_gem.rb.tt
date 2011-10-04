@@ -1,7 +1,8 @@
 require '<%=config[:name]%>/version'
+require '<%=config[:name]%>/configuration'
 
 module <%=config[:constant]%>
-  # TODO: your code goes here
+  extend Configuration
 
   require '<%=config[:name]%>/client'
 end

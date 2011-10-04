@@ -1,0 +1,136 @@
+require 'spec_helper'
+
+describe <%=config[:constant]%>::Configuration do
+  let(:test_module) do
+    module TestModule
+      extend <%=config[:constant]%>::Configuration
+    end
+  end
+
+  subject { test_module }
+<%if config[:soap] %>
+  let(:endpoint) { 'http://configured.endpoint.com' }
+  let(:username) { 'configured user' }
+  let(:password) { 'configured password' }
+  let(:namespace) { 'http://configured.namespace.com' }
+<%end%>
+
+  after { test_module.reset }
+
+  it { should respond_to(:configure) }
+
+  context 'with default configuration' do
+<%if config[:soap]%>
+    its(:endpoint) { should == <%=config[:constant]%>::DEFAULT_ENDPOINT }
+    its(:namespace) { should == <%=config[:constant]%>::DEFAULT_NAMESPACE }
+    its(:username) { should_not be }
+    its(:password) { should_not be }
+<%end%>
+    # TODO: test config options with defaults here, for example:
+    # its(:special_prop) { should == <%=config[:constant]%>::DEFAULT_SPECIAL_PROP }
+  end
+
+  describe '.configure' do
+    subject { test_module.configure(&config_block) }
+
+    context 'with full configuration' do
+      let(:config_block) do
+        lambda do |config|
+          <%if config[:soap]%>config.endpoint = endpoint
+          config.username = username
+          config.password = password
+          config.namespace = namespace<%end%>
+          # TODO: add config options here, for example:
+          # config.my_setting = 'value'
+        end
+      end
+
+      it { should == test_module }
+<%if config[:soap]%>
+      its(:endpoint) { should == endpoint }
+      its(:username) { should == username }
+      its(:password) { should == password }
+      its(:namespace) { should == namespace }
+<%end%>
+    end
+
+    context 'with partial configuration' do
+      let(:config_block) do
+        lambda do |config|
+          <%if config[:soap]%>config.username = username
+          config.password = password<%end%>
+          # TODO: add config options here, for example:
+          # config.my_required_setting = 'value'
+        end
+      end
+
+      it { should == test_module }
+<%if config[:soap]%>
+      its(:endpoint) { should == <%=config[:constant]%>::DEFAULT_ENDPOINT }
+      its(:namespace) { should == <%=config[:constant]%>::DEFAULT_NAMESPACE }
+      its(:username) { should == username }
+      its(:password) { should == password }
+<%end%>
+    end
+  end
+
+  it { should respond_to(:reset) }
+
+  describe '.reset' do
+    before do
+      test_module.configure do |config|
+        <%if config[:soap]%>config.endpoint = endpoint
+        config.username = username
+        config.password = password
+        config.namespace = namespace
+        <%end%># TODO: configure the module, for example
+        # config.my_option = true
+      end
+    end
+
+    subject { test_module.reset }
+<%if config[:soap]%>
+    it 'should change the endpoint to the default value' do
+      expect { subject }.to change { test_module.endpoint }.from(endpoint).to(<%=config[:constant]%>::DEFAULT_ENDPOINT)
+    end
+
+    it 'should change the namespace to the default value' do
+      expect { subject }.to change { test_module.namespace }.from(namespace).to(<%=config[:constant]%>::DEFAULT_NAMESPACE)
+    end
+
+    it 'should clear the username' do
+      expect { subject }.to change { test_module.username }.from(username).to(nil)
+    end
+
+    it 'should clear the password' do
+      expect { subject }.to change { test_module.password }.from(password).to(nil)
+    end
+<%end%>
+    # TODO: assert that all configuration options have been reset
+  end
+
+  describe '.options' do
+    before do
+      test_module.configure do |config|
+        <%if config[:soap]%>config.endpoint = endpoint
+        config.username = username
+        config.password = password
+        config.namespace = namespace
+        <%end%># TODO: configure the module, for example
+        # config.my_option = true
+      end
+    end
+
+    subject { test_module.options }
+<%if config[:soap]%>
+    it { should have_key(:endpoint) }
+    its([:endpoint]) { should == endpoint }
+    it { should have_key(:namespace) }
+    its([:namespace]) { should == namespace }
+    it { should have_key(:username) }
+    its([:username]) { should == username }
+    it { should have_key(:password) }
+    its([:password]) { should == password }
+<%end%>
+  end
+end

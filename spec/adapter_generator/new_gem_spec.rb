@@ -17,6 +17,8 @@ describe AdapterGenerator::NewGem do
     AdapterGenerator::NewGem.any_instance.stub(:git_user_email).and_return(author_email)
     AdapterGenerator::NewGem.any_instance.stub(:make_bin_executable).and_return(nil)
     AdapterGenerator::NewGem.any_instance.stub(:initialize_git).and_return(nil)
+    AdapterGenerator::NewGem.any_instance.stub(:create_master_branch).and_return(nil)
+    AdapterGenerator::NewGem.any_instance.stub(:create_development_branch).and_return(nil)
   end
 
   let(:run_generator) { capture(:stdout) { AdapterGenerator::NewGem.start(args) } }
@@ -41,6 +43,7 @@ describe AdapterGenerator::NewGem do
     it_should_behave_like 'a rspec configurer'
     it_should_behave_like 'a doc generator'
     it_should_behave_like 'a git initializer'
+    it_should_behave_like 'a configuration generator'
   end
 
   context "when gem name argument is in camel case" do
@@ -58,6 +61,7 @@ describe AdapterGenerator::NewGem do
     it_should_behave_like 'a rspec configurer'
     it_should_behave_like 'a doc generator'
     it_should_behave_like 'a git initializer'
+    it_should_behave_like 'a configuration generator'
   end
 
   context "when gem name argument is in a hybrid format" do
@@ -75,5 +79,6 @@ describe AdapterGenerator::NewGem do
     it_should_behave_like 'a rspec configurer'
     it_should_behave_like 'a doc generator'
     it_should_behave_like 'a git initializer'
+    it_should_behave_like 'a configuration generator'
   end
 end

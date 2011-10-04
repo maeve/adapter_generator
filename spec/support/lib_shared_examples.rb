@@ -31,7 +31,8 @@ shared_examples_for 'a gem lib generator' do
 
     it { should match /module #{module_name}/ }
     it { should match /require\s+['"]#{gem_name}\/client['"]/ }
-    it { should match /require\s+['"]#{gem_name}\/version['"]/ } 
+    it { should match /require\s+['"]#{gem_name}\/version['"]/ }
+    it { should match /extend\s+Configuration/ } 
   end
 
   describe "the generated version" do

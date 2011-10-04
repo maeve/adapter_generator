@@ -101,5 +101,6 @@ shared_examples_for 'a gemspec generator' do
     end
 
     it { should match /\.add_dependency\(\s*['"]modelish['"]/ }
+    it { should match /\.add_dependency\(\s*['"]configlet['"]/ }
   end
 end

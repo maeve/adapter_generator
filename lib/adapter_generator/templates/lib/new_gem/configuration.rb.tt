@@ -1,0 +1,85 @@
+require 'configlet'
+
+module <%=config[:constant]%>
+  # All valid configurations options
+  VALID_CONFIG_OPTIONS = [<%if config[:soap]%>:endpoint, :username, :password, :namespace<%end%>]
+<%if config[:soap]%>
+  DEFAULT_ENDPOINT = nil # TODO: fill in default endpoint
+  DEFAULT_NAMESPACE = nil # TODO: fill in default namespace
+<%end%>
+  module Configuration
+    include Configlet
+ 
+    def self.extended(base)
+      # Default configuration - happens whether or not .configure is called
+      base.config :<%=config[:name]%> do
+<%if config[:soap]%>
+        default :endpoint => DEFAULT_ENDPOINT
+        default :namespace => DEFAULT_NAMESPACE
+<%end%>
+        # TODO - set default values here, for example:
+        # default :my_opt => 'default value'
+      end
+    end
+
+    # Mutators and accessors for configuration options
+    VALID_CONFIG_OPTIONS.each do |config_opt|
+      define_method(config_opt) do
+        self[config_opt]
+      end
+
+      define_method("#{config_opt}=".to_sym) do |val|
+        self[config_opt] = val
+      end
+    end
+
+    # Configures this module through the given +block+.
+    # Default configuration options will be applied unless 
+    # they are explicitly overridden in the +block+.
+    #
+    # @yield [_self] configures service connection options
+    # @yieldparam [YieldstarClient] _self the object on which the configure method was called
+    # @example Typical case utilizing defaults
+    #   <%=config[:constant]%>.configure do |config|
+    #     config.username = 'my_user'
+    #     config.password = 'my_pass'
+    #   end
+    # @example Overriding defaults
+    #   <%=config[:constant]%>.configure do |config|
+    #     config.username = 'my_user'
+    #     config.password = 'my_pass'
+    #     config.endpoint = 'http://my.endpoint.com'
+    #     config.namespace = 'http://my.namespace.com'
+    #   end
+    # @return [<%=config[:constant]%>] _self
+    # @see VALID_CONFIG_OPTIONS
+    def configure
+      config :<%=config[:name]%> do
+        yield self
+      end
+
+      self
+    end
+
+    # Create a hash of configuration options and their
+    # values.
+    #
+    # @return [Hash<Symbol,Object>] the options hash
+    def options
+      VALID_CONFIG_OPTIONS.inject({}) do |option, key|
+        option.merge!(key => send(key))
+      end
+    end
+
+    # Resets this module's configuration.
+    # Configuration options will be set to default values
+    # if they exist; otherwise, they will be set to nil.
+    #
+    # @see VALID_CONFIG_OPTIONS
+    # @see DEFAULT_ENDPOINT
+    # @see DEFAULT_NAMESPACE
+    def reset
+      VALID_CONFIG_OPTIONS.each { |opt| self.send("#{opt}=", nil) } 
+    end
+  end
+end

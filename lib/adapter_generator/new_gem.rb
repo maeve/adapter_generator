@@ -28,6 +28,7 @@ module AdapterGenerator
       template(File.join('lib', 'new_gem.rb.tt'), File.join(target, "#{opts[:name]}.rb"), opts)
       template(File.join('lib', 'new_gem', 'version.rb.tt'), File.join(target, opts[:name], 'version.rb'), opts)
       template(File.join('lib', 'new_gem', 'client.rb.tt'), File.join(target, opts[:name], 'client.rb'), opts)
+      template(File.join('lib', 'new_gem', 'configuration.rb.tt'), File.join(target, opts[:name], 'configuration.rb'), opts)
     end
 
     def create_gemspec
@@ -69,13 +70,16 @@ module AdapterGenerator
     end
 
     def setup_rspec
-      opts = {:name => name.underscore, :constant => name.camelize}
+      opts = {:name => name.underscore, 
+              :constant => name.camelize,
+              :soap => options[:soap]}
       spec_path = File.join(gem_path, 'spec')
       template('rspec.tt', File.join(gem_path, '.rspec'), opts)
       template(File.join('spec','spec_helper.rb.tt'), File.join(spec_path, 'spec_helper.rb'), opts)
       template(File.join('spec','new_gem_spec.rb.tt'), File.join(spec_path, "#{opts[:name]}_spec.rb"), opts)
       empty_directory(File.join(spec_path, 'support'))
-      empty_directory(File.join(spec_path, opts[:name]))
+      template(File.join('spec','new_gem','configuration_spec.rb.tt'), File.join(spec_path, opts[:name], 'configuration_spec.rb'), opts)
+      template(File.join('spec','new_gem','client_spec.rb.tt'), File.join(spec_path, opts[:name], 'client_spec.rb'), opts)
     end
 
     def create_docs
@@ -86,6 +90,8 @@ module AdapterGenerator
     def setup_git
       template('gitignore.tt', File.join(gem_path, '.gitignore'))
       initialize_git
+      create_master_branch
+      create_development_branch
     end
 
     private
@@ -106,8 +112,18 @@ module AdapterGenerator
     end
 
     def initialize_git
-      shell.say_status('initialize', 'git')
+      shell.say_status('initialize', 'git repo')
       Dir.chdir(gem_path) { `git init`; `git add .` }
+    end
+
+    def create_master_branch
+      shell.say_status('create', 'git master branch')
+      Dir.chdir(gem_path) { `git commit -m 'Initial commit (generated adapter)'` }
+    end
+
+    def create_development_branch
+      shell.say_status('create', 'git development branch')
+      Dir.chdir(gem_path) { `git checkout -b development` }
     end
   end
 end

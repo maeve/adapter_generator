@@ -18,6 +18,7 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
 
   s.add_dependency('modelish', '>=0.1.2')
+  s.add_dependency('configlet', '~>2.1')
 <% if config[:soap] %>
   s.add_dependency('savon', '~>0.9.7')
   s.add_development_dependency('savon_spec', '~>0.1')

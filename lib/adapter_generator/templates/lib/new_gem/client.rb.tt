@@ -1,20 +1,39 @@
-<% if config[:soap] %>require 'savon'<% end %>
+<%if config[:soap] %>require 'savon'<%end%>
 
-module <%= config[:constant] %>
-  # TODO: document <%= config[:constant] %>::Client
+module <%=config[:constant]%>
+  # TODO: document <%=config[:constant]%>::Client
   class Client
+    # Mutators for configuration options
+    attr_writer *<%=config[:constant]%>::VALID_CONFIG_OPTIONS
+
+    # Accessors for configuration options
+    <%=config[:constant]%>::VALID_CONFIG_OPTIONS.each do |opt|
+      define_method(opt) { get_value(opt) }
+    end
 
     # Initializes the client.
     #
     # @param [Hash] options
-    # TODO: document individual options
+    <%if config[:soap]%># @option options [String] :username The username for authenticating to the web service.
+    # @option options [String] :password The password for authenticating to the web service.
+    # @option options [String] :endpoint The address for connecting to the web service.
+    # @option options [String] :namespace The XML namespace to use for requests.
+    <%else%># TODO: document individual options<%end%>
     def initialize(options={})
       options.each { |k,v| self.send("#{k}=", v) if self.respond_to?("#{k}=") }
     end
 
-    def foo
+    # Retrieves an attribute's value. If the attribute has not been set
+    # on this object, it is retrieved from the global configuration.
+    #
+    # @see <%=config[:constant]%>.configure
+    # 
+    # @param [Symbol] attribute the name of the attribute
+    # @return [String] the value of the attribute
+    def get_value(attribute)
+      instance_variable_get("@#{attribute}") || <%=config[:constant]%>.send(attribute)
     end
-<% if config[:soap] %>
+<%if config[:soap]%>
     def send_soap_request(soap_action,soap_parameters={})
       begin
         response = soap_client.request :wsdl, soap_action do
@@ -31,6 +50,6 @@ module <%= config[:constant] %>
     def soap_client
       Savon::Client.new
     end
-<% end %>
+<%end%>
   end
 end

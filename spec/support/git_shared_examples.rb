@@ -21,4 +21,14 @@ shared_examples_for 'a git initializer' do
     AdapterGenerator::NewGem.any_instance.should_receive(:initialize_git).at_least(:once)
     subject
   end
+
+  it 'should create an initial commit on the master branch' do
+    AdapterGenerator::NewGem.any_instance.should_receive(:create_master_branch).at_least(:once)
+    subject
+  end
+
+  it 'should create the development branch' do
+    AdapterGenerator::NewGem.any_instance.should_receive(:create_development_branch).at_least(:once)
+    subject
+  end
 end
