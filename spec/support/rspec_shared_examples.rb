@@ -25,6 +25,14 @@ shared_examples_for 'a rspec configurer' do
     it { should match /require\s+['"]#{gem_name}['"]/ }
     it { should match /RSpec\.configure\s+do\s+\|config\|/ }
     it { should match /config\.include\s+FakeFS::SpecHelpers\s+/ }
+
+    context 'with --soap' do
+      let(:args) { [gem_name, '--soap'] }
+
+      it { should match /require\s+['"]savon_spec['"]/ }
+      it { should match /Savon::Spec::Fixture.path\s*=/ }
+      it { should match /config\.include\s+Savon::Spec::Macros\s+/ }
+    end
   end
 
   it 'should create the top-level spec' do

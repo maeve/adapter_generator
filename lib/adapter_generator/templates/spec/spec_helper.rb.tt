@@ -2,9 +2,20 @@ require 'rspec'
 
 require 'webmock/rspec'
 require 'fakefs/spec_helpers'
+<%if config[:soap]%>
+require 'savon_spec'
 
+Savon::Spec::Fixture.path = File.expand_path('../fixtures', __FILE__)
+Savon.configure do |config|
+  config.log = false
+end
+<%end%>
 RSpec.configure do |config|
   config.include FakeFS::SpecHelpers
+  <%if config[:soap]%>
+  config.include Savon::Spec::Macros
+  config.before { FakeFS::FileSystem.clone('../fixtures', __FILE__) }
+  <%end%>
 end
 
 require '<%=config[:name]%>'
