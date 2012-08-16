@@ -31,7 +31,7 @@ module <%=config[:constant]%>
       end
 
       define_method("#{config_opt}=".to_sym) do |val|
-        self[config_opt] = val
+        self[config_opt] = val.nil? ? nil : val.to_s
       end
     end
 
