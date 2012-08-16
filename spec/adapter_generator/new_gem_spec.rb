@@ -18,7 +18,6 @@ describe AdapterGenerator::NewGem do
     AdapterGenerator::NewGem.any_instance.stub(:make_bin_executable).and_return(nil)
     AdapterGenerator::NewGem.any_instance.stub(:initialize_git).and_return(nil)
     AdapterGenerator::NewGem.any_instance.stub(:create_master_branch).and_return(nil)
-    AdapterGenerator::NewGem.any_instance.stub(:create_development_branch).and_return(nil)
   end
 
   let(:run_generator) { capture(:stdout) { AdapterGenerator::NewGem.start(args) } }

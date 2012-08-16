@@ -91,7 +91,6 @@ module AdapterGenerator
       template('gitignore.tt', File.join(gem_path, '.gitignore'))
       initialize_git
       create_master_branch
-      create_development_branch
     end
 
     private
@@ -119,11 +118,6 @@ module AdapterGenerator
     def create_master_branch
       shell.say_status('create', 'git master branch')
       Dir.chdir(gem_path) { `git commit -m 'Initial commit (generated adapter)'` }
-    end
-
-    def create_development_branch
-      shell.say_status('create', 'git development branch')
-      Dir.chdir(gem_path) { `git checkout -b development` }
     end
   end
 end
