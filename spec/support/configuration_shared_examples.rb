@@ -25,6 +25,9 @@ shared_examples_for 'a configuration generator' do
       it { should match /def\s+configure/ }
       it { should match /def\s+reset/ }
       it { should match /def\s+options/ }
+      it { should match /def\s+debug\?/ }
+      it { should match /attr_writer\s+:logger/ }
+      it { should match /def\s+logger/ }
     end
   end
 
@@ -49,6 +52,9 @@ shared_examples_for 'a configuration generator' do
       it { should match /def\s+configure/ }
       it { should match /def\s+reset/ }
       it { should match /def\s+options/ }
+      it { should match /def\s+debug\?/ }
+      it { should match /attr_writer\s+:logger/ }
+      it { should match /def\s+logger/ }
     end
   end
 end

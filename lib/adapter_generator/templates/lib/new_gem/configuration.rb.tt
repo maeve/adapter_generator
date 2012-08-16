@@ -1,8 +1,9 @@
 require 'configlet'
+require 'logger'
 
 module <%=config[:constant]%>
   # All valid configurations options
-  VALID_CONFIG_OPTIONS = [<%if config[:soap]%>:endpoint, :username, :password, :namespace<%end%>]
+  VALID_CONFIG_OPTIONS = [<%if config[:soap]%>:endpoint, :username, :password, :namespace, <%end%>:debug, :logger]
 <%if config[:soap]%>
   DEFAULT_ENDPOINT = nil # TODO: fill in default endpoint
   DEFAULT_NAMESPACE = nil # TODO: fill in default namespace
@@ -17,6 +18,7 @@ module <%=config[:constant]%>
         default :endpoint => DEFAULT_ENDPOINT
         default :namespace => DEFAULT_NAMESPACE
 <%end%>
+        default :debug => 'false'
         # TODO - set default values here, for example:
         # default :my_opt => 'default value'
       end
@@ -33,12 +35,34 @@ module <%=config[:constant]%>
       end
     end
 
+<%if config[:soap]%>
+    # @attr [String] endpoint the service endpoint URL (defaults to <%=config[:constant]%>::DEFAULT_ENDPOINT)
+    # @attr [String] username the username for authentication
+    # @attr [String] password the password for authentication
+    # @attr [String] namespace the namespace for SOAP requests (defaults to <%=config[:constant]%>::DEFAULT_NAMESPACE)
+<%end%>
+    # @attr [true,false,String] debug set to true or 'true' to enable debug logging (defaults to false)
+    # TODO: document additional configuration attributes if necessary
+
+    # @return [true,false] true if debug logging is enabled; false otherwie.
+    def debug?
+      self[:debug] == 'true'
+    end
+
+    # Sets the logger to use for debug messages
+    attr_writer :logger
+
+    # @return [Logger] the logger to use for debug messages (defaults to STDOUT)
+    def logger
+      @logger ||= Logger.new(STDOUT)
+    end
+
     # Configures this module through the given +block+.
     # Default configuration options will be applied unless 
     # they are explicitly overridden in the +block+.
     #
     # @yield [_self] configures service connection options
-    # @yieldparam [YieldstarClient] _self the object on which the configure method was called
+    # @yieldparam [<%=config[:constant]%>] _self the object on which the configure method was called
     # @example Typical case utilizing defaults
     #   <%=config[:constant]%>.configure do |config|
     #     config.username = 'my_user'
@@ -49,7 +73,6 @@ module <%=config[:constant]%>
     #     config.username = 'my_user'
     #     config.password = 'my_pass'
     #     config.endpoint = 'http://my.endpoint.com'
-    #     config.namespace = 'http://my.namespace.com'
     #   end
     # @return [<%=config[:constant]%>] _self
     # @see VALID_CONFIG_OPTIONS
@@ -76,8 +99,10 @@ module <%=config[:constant]%>
     # if they exist; otherwise, they will be set to nil.
     #
     # @see VALID_CONFIG_OPTIONS
+<%if config[:soap]%>
     # @see DEFAULT_ENDPOINT
     # @see DEFAULT_NAMESPACE
+<%end%>
     def reset
       VALID_CONFIG_OPTIONS.each { |opt| self.send("#{opt}=", nil) } 
     end

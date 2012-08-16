@@ -14,6 +14,7 @@ describe <%=config[:constant]%>::Configuration do
   let(:password) { 'configured password' }
   let(:namespace) { 'http://configured.namespace.com' }
 <%end%>
+  let(:logger) { mock() }
 
   after { test_module.reset }
 
@@ -26,6 +27,9 @@ describe <%=config[:constant]%>::Configuration do
     its(:username) { should_not be }
     its(:password) { should_not be }
 <%end%>
+    it { should_not be_debug }
+    its(:logger) { should be_an_instance_of(Logger) }
+
     # TODO: test config options with defaults here, for example:
     # its(:special_prop) { should == <%=config[:constant]%>::DEFAULT_SPECIAL_PROP }
   end
@@ -40,6 +44,8 @@ describe <%=config[:constant]%>::Configuration do
           config.username = username
           config.password = password
           config.namespace = namespace<%end%>
+          config.debug = true
+          config.logger = logger
           # TODO: add config options here, for example:
           # config.my_setting = 'value'
         end
@@ -52,6 +58,8 @@ describe <%=config[:constant]%>::Configuration do
       its(:password) { should == password }
       its(:namespace) { should == namespace }
 <%end%>
+      it { should be_debug }
+      its(:logger) { should == logger }
     end
 
     context 'with partial configuration' do
@@ -59,6 +67,7 @@ describe <%=config[:constant]%>::Configuration do
         lambda do |config|
           <%if config[:soap]%>config.username = username
           config.password = password<%end%>
+          config.debug = true
           # TODO: add config options here, for example:
           # config.my_required_setting = 'value'
         end
@@ -71,6 +80,8 @@ describe <%=config[:constant]%>::Configuration do
       its(:username) { should == username }
       its(:password) { should == password }
 <%end%>
+      it { should be_debug }
+      its(:logger) { should be_an_instance_of(Logger) }
     end
   end
 
@@ -82,8 +93,10 @@ describe <%=config[:constant]%>::Configuration do
         <%if config[:soap]%>config.endpoint = endpoint
         config.username = username
         config.password = password
-        config.namespace = namespace
-        <%end%># TODO: configure the module, for example
+        config.namespace = namespace<%end%>
+        config.debug = true
+        config.logger = logger
+        # TODO: configure the module, for example
         # config.my_option = true
       end
     end
@@ -106,6 +119,16 @@ describe <%=config[:constant]%>::Configuration do
       expect { subject }.to change { test_module.password }.from(password).to(nil)
     end
 <%end%>
+
+    it 'should change the debug flag to the default value' do
+      expect { subject }.to change { test_module.debug? }.to(false)
+    end
+
+    it 'should change the logger to the default value' do
+      expect { subject }.to change { test_module.logger }
+      test_module.logger.should be_an_instance_of(Logger)
+    end
+
     # TODO: assert that all configuration options have been reset
   end
 
@@ -115,22 +138,22 @@ describe <%=config[:constant]%>::Configuration do
         <%if config[:soap]%>config.endpoint = endpoint
         config.username = username
         config.password = password
-        config.namespace = namespace
-        <%end%># TODO: configure the module, for example
+        config.namespace = namespace<%end%>
+        config.debug = true
+        config.logger = logger
+        # TODO: configure the module, for example
         # config.my_option = true
       end
     end
 
     subject { test_module.options }
 <%if config[:soap]%>
-    it { should have_key(:endpoint) }
     its([:endpoint]) { should == endpoint }
-    it { should have_key(:namespace) }
     its([:namespace]) { should == namespace }
-    it { should have_key(:username) }
     its([:username]) { should == username }
-    it { should have_key(:password) }
     its([:password]) { should == password }
 <%end%>
+    its([:debug]) { should be_true }
+    its([:logger]) { should == logger }
   end
 end
