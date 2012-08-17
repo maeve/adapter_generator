@@ -11,6 +11,20 @@ module <%=config[:constant]%>
       define_method(opt) { get_value(opt) }
     end
 
+<%if config[:soap]%>
+    # @attr [String] endpoint the service endpoint URL
+    # @attr [String] username the username for authentication
+    # @attr [String] password the password for authentication
+    # @attr [String] namespace the namespace for SOAP requests
+<%end%>
+    # @attr [true,false,String] debug set to true or 'true' to enable debug logging (defaults to false)
+    # @attr [Logger] logger the custom logger instance for debug logging (defaults to STDOUT)
+    # TODO: document any other configuration attributes
+
+    def debug?
+      self.debug.to_s == 'true'
+    end
+
     # Initializes the client.
     #
     # @param [Hash] options
@@ -18,7 +32,9 @@ module <%=config[:constant]%>
     # @option options [String] :password The password for authenticating to the web service.
     # @option options [String] :endpoint The address for connecting to the web service.
     # @option options [String] :namespace The XML namespace to use for requests.
-    <%else%># TODO: document individual options<%end%>
+    <%end%># @option options [true,false] :debug true enabled debug logging (defaults to false)
+    # @option options [Logger] :logger a custom logger instance (defaults to STDOUT)
+    # TODO: document any other config options
     def initialize(options={})
       options.each { |k,v| self.send("#{k}=", v) if self.respond_to?("#{k}=") }
     end

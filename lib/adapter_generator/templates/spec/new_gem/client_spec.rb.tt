@@ -11,15 +11,19 @@ describe <%=config[:constant]%>::Client do
   let(:username) { 'test_user' }
   let(:password) { 'secret' }
   let(:namespace) { 'http://foo.com/namespace' }
+<%end%>
+  let(:debug) { true }
+  let(:logger) { mock() }
+
   let(:options) do
-    {:endpoint => endpoint,
+    {<%if config[:soap]%>:endpoint => endpoint,
      :username => username,
      :password => password,
-     :namespace => namespace}
+     :namespace => namespace,<%end%>
+     :debug => debug,
+     :logger => logger
+    }
   end
-<%else%>
-  let(:options) { Hash.new }
-<%end%>
 
   context 'with default configuration' do
     let(:client) { <%=config[:constant]%>::Client.new }
@@ -28,7 +32,10 @@ describe <%=config[:constant]%>::Client do
     its(:namespace) { should == <%=config[:constant]%>::DEFAULT_NAMESPACE }
     its(:username) { should be_nil }
     its(:password) { should be_nil }
-<%else%> 
+<%else%>
+    it { should_not be_debug }
+    its(:logger) { should be_an_instance_of(Logger) }
+
     # TODO: test for config options with default values. For example,
     # its(:required_setting) { should == <%=config[:constant]%>::DEFAULT_REQUIRED_SETTING }
     # its(:optional_setting) { should be_nil }
@@ -41,7 +48,11 @@ describe <%=config[:constant]%>::Client do
     its(:namespace) { should == namespace }
     its(:username) { should == username }
     its(:password) { should == password }
+<%end%>
+    it { should be_debug }
+    its(:logger) { should == logger }
 
+<%if config[:soap]%>
     describe "#endpoint=" do
       subject { client.endpoint = new_endpoint }
 
@@ -165,7 +176,70 @@ describe <%=config[:constant]%>::Client do
         end
       end
     end
-<%else%>
+<%end%>
+    describe '#debug=' do
+      subject { client.debug = new_debug }
+
+       context 'with nil debug' do
+        let(:new_debug) { nil }
+
+        context 'when there is a debug flag configured at the top-level module' do
+          let(:configured_debug) { 'true' }
+          before { <%=config[:constant]%>.configure { |config| config.debug = configured_debug } }
+
+          it 'should set the debug flag according to the configuration' do
+            expect { subject }.to_not change { client.debug? }
+          end
+        end
+
+        context 'when there is no debug flag configured at the top level' do
+          it 'should set the debug flag to the default' do
+            expect { subject }.to change { client.debug? }.to(false)
+          end
+        end
+      end
+
+      context 'with new setting' do
+        let(:new_debug) { 'false' }
+
+        it 'should change the value of the debug flag to match the new value' do
+          expect { subject }.to change { client.debug? }.from(true).to(false)
+        end
+      end
+    end
+
+    describe '#logger=' do
+      subject { client.logger = new_logger }
+
+       context 'with nil logger' do
+        let(:new_logger) { nil }
+
+        context 'when there is a logger configured at the top-level module' do
+          let(:configured_logger) { mock() }
+          before { <%=config[:constant]%>.configure { |config| config.logger = configured_logger } }
+
+          it 'should change the value of the logger to match the configuration' do
+            expect { subject }.to change { client.logger }.from(logger).to(configured_logger)
+          end
+        end
+
+        context 'when there is no logger configured at the top level' do
+          it 'should change the value of the logger to the default' do
+            expect { subject }.to change { client.logger }
+            client.logger.should be_an_instance_of(Logger)
+          end
+        end
+      end
+
+      context 'with new logger' do
+        let(:new_logger) { mock() }
+
+        it 'should change the value of the logger to match the new value' do
+          expect { subject }.to change { client.logger }.from(logger).to(new_logger)
+        end
+      end
+    end
+
     # TODO: test for all config options. For example,
     # its(:setting) { should == 'value' }
 
@@ -177,6 +251,5 @@ describe <%=config[:constant]%>::Client do
     #     expect { subject }.to change { client.my_setting }.from(nil).to(new_val)
     #   end
     # end
-<%end%>
   end
 end
